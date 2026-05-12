@@ -46,7 +46,6 @@ fun PlantListScreen(
     viewModel: PlantListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var menuExpanded by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -57,6 +56,24 @@ fun PlantListScreen(
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
+
+    PlantListContent(
+        uiState = uiState,
+        onNavigateToPlant = onNavigateToPlant,
+        onNavigateToAddPlant = onNavigateToAddPlant,
+        onNavigateToSettings = onNavigateToSettings,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun PlantListContent(
+    uiState: PlantListUiState,
+    onNavigateToPlant: (Long) -> Unit,
+    onNavigateToAddPlant: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {

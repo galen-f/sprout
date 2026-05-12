@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">sprout</string>
+    <string name="app_name">Sprout</string>
+    <string name="notification_channel_watering">Watering Reminders</string>
+    <string name="notification_channel_fertilizing">Fertilizing Reminders</string>
+    <string name="empty_plants_title">No plants yet</string>
+    <string name="empty_plants_subtitle">Tap + to add your first plant</string>
 </resources>

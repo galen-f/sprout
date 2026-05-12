@@ -8,9 +8,9 @@ Sprout helps you track your houseplants and reminds you when each one needs wate
 
 ## Screenshots
 
-| Plant List | Plant Detail | Add Plant | Care History |
-|:---:|:---:|:---:|:---:|
-| *(coming soon)* | *(coming soon)* | *(coming soon)* | *(coming soon)* |
+| Plant List | Plant Detail |
+|:---:|:---:|
+| ![Home Screen](docs/home_screen.png) | ![Home Screen](docs/plant_profile.png) |
 
 ---
 

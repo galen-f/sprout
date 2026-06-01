@@ -10,7 +10,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.example.sprout.ui.AppViewModel
 import com.example.sprout.ui.navigation.SproutNavHost
 import com.example.sprout.ui.theme.SproutTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +32,9 @@ class MainActivity : ComponentActivity() {
         deepLinkPlantId = intent.getLongExtra(EXTRA_PLANT_ID, -1L).takeIf { it != -1L }
         enableEdgeToEdge()
         setContent {
-            SproutTheme {
+            val appViewModel: AppViewModel = hiltViewModel()
+            val themeMode by appViewModel.themeMode.collectAsStateWithLifecycle()
+            SproutTheme(themeMode = themeMode) {
                 Surface(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     SproutNavHost(

@@ -9,11 +9,11 @@ class FakeReminderScheduler : ReminderScheduler {
     val cancelledWatering = mutableListOf<Long>()
     val cancelledFertilizer = mutableListOf<Long>()
 
-    override fun scheduleWatering(plantId: Long, dueAt: Instant) {
+    override suspend fun scheduleWatering(plantId: Long, dueAt: Instant) {
         scheduledWatering[plantId] = dueAt
     }
 
-    override fun scheduleFertilizer(plantId: Long, dueAt: Instant) {
+    override suspend fun scheduleFertilizer(plantId: Long, dueAt: Instant) {
         scheduledFertilizer[plantId] = dueAt
     }
 

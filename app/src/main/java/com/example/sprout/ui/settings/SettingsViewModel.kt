@@ -26,12 +26,24 @@ class SettingsViewModel @Inject constructor(
     private val csvExporter: CsvExporter,
 ) : ViewModel() {
 
+    private val reminderTimeFlow = combine(
+        prefsRepository.reminderHour,
+        prefsRepository.reminderMinute,
+    ) { hour, minute -> hour to minute }
+
     val uiState = combine(
         prefsRepository.showArchivedPlants,
+        prefsRepository.themeMode,
+        prefsRepository.repeatReminders,
         plantsRepository.observeAllPlants(),
-    ) { showArchived, allPlants ->
+        reminderTimeFlow,
+    ) { showArchived, themeMode, repeatReminders, allPlants, reminderTime ->
         SettingsUiState(
             showArchivedPlants = showArchived,
+            themeMode = themeMode,
+            repeatReminders = repeatReminders,
+            reminderHour = reminderTime.first,
+            reminderMinute = reminderTime.second,
             archivedPlants = if (showArchived) allPlants.filter { it.archivedAt != null } else emptyList(),
         )
     }.stateIn(
@@ -45,6 +57,21 @@ class SettingsViewModel @Inject constructor(
 
     fun setShowArchived(show: Boolean) {
         viewModelScope.launch { prefsRepository.setShowArchived(show) }
+    }
+
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch { prefsRepository.setThemeMode(mode) }
+    }
+
+    fun setReminderTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            prefsRepository.setReminderHour(hour)
+            prefsRepository.setReminderMinute(minute)
+        }
+    }
+
+    fun setRepeatReminders(enabled: Boolean) {
+        viewModelScope.launch { prefsRepository.setRepeatReminders(enabled) }
     }
 
     fun restorePlant(plantId: Long) {

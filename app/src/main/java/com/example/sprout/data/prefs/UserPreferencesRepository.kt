@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +22,7 @@ class UserPreferencesRepository @Inject constructor(
 ) {
     private val showArchivedKey = booleanPreferencesKey("show_archived_plants")
     private val hasSeenOnboardingKey = booleanPreferencesKey("has_seen_onboarding")
+    private val themeModeKey = stringPreferencesKey("theme_mode")
 
     val showArchivedPlants: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[showArchivedKey] ?: false }
@@ -27,11 +30,43 @@ class UserPreferencesRepository @Inject constructor(
     val hasSeenOnboarding: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[hasSeenOnboardingKey] ?: false }
 
+    private val reminderHourKey = intPreferencesKey("reminder_hour")
+    private val reminderMinuteKey = intPreferencesKey("reminder_minute")
+    private val repeatRemindersKey = booleanPreferencesKey("repeat_reminders")
+
+    val themeMode: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[themeModeKey] ?: "system" }
+
+    val reminderHour: Flow<Int> = context.dataStore.data
+        .map { prefs -> prefs[reminderHourKey] ?: 9 }
+
+    val reminderMinute: Flow<Int> = context.dataStore.data
+        .map { prefs -> prefs[reminderMinuteKey] ?: 0 }
+
+    val repeatReminders: Flow<Boolean> = context.dataStore.data
+        .map { prefs -> prefs[repeatRemindersKey] ?: false }
+
     suspend fun setShowArchived(show: Boolean) {
         context.dataStore.edit { prefs -> prefs[showArchivedKey] = show }
     }
 
     suspend fun setHasSeenOnboarding(seen: Boolean) {
         context.dataStore.edit { prefs -> prefs[hasSeenOnboardingKey] = seen }
+    }
+
+    suspend fun setThemeMode(mode: String) {
+        context.dataStore.edit { prefs -> prefs[themeModeKey] = mode }
+    }
+
+    suspend fun setReminderHour(hour: Int) {
+        context.dataStore.edit { prefs -> prefs[reminderHourKey] = hour }
+    }
+
+    suspend fun setReminderMinute(minute: Int) {
+        context.dataStore.edit { prefs -> prefs[reminderMinuteKey] = minute }
+    }
+
+    suspend fun setRepeatReminders(repeat: Boolean) {
+        context.dataStore.edit { prefs -> prefs[repeatRemindersKey] = repeat }
     }
 }

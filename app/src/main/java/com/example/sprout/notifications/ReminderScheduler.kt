@@ -1,11 +1,11 @@
 package com.example.sprout.notifications
 
-import android.content.Context
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.example.sprout.data.prefs.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -15,8 +15,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface ReminderScheduler {
-    fun scheduleWatering(plantId: Long, dueAt: Instant)
-    fun scheduleFertilizer(plantId: Long, dueAt: Instant)
+    suspend fun scheduleWatering(plantId: Long, dueAt: Instant)
+    suspend fun scheduleFertilizer(plantId: Long, dueAt: Instant)
     fun cancelWatering(plantId: Long)
     fun cancelFertilizer(plantId: Long)
     fun cancelAll(plantId: Long)
@@ -25,10 +25,10 @@ interface ReminderScheduler {
 @Singleton
 class WorkManagerReminderScheduler @Inject constructor(
     private val workManager: WorkManager,
-    @ApplicationContext private val context: Context,
+    private val prefsRepository: UserPreferencesRepository,
 ) : ReminderScheduler {
 
-    override fun scheduleWatering(plantId: Long, dueAt: Instant) {
+    override suspend fun scheduleWatering(plantId: Long, dueAt: Instant) {
         schedule(
             uniqueName = "watering_$plantId",
             plantId = plantId,
@@ -37,7 +37,7 @@ class WorkManagerReminderScheduler @Inject constructor(
         )
     }
 
-    override fun scheduleFertilizer(plantId: Long, dueAt: Instant) {
+    override suspend fun scheduleFertilizer(plantId: Long, dueAt: Instant) {
         schedule(
             uniqueName = "fertilizer_$plantId",
             plantId = plantId,
@@ -59,8 +59,10 @@ class WorkManagerReminderScheduler @Inject constructor(
         cancelFertilizer(plantId)
     }
 
-    private fun schedule(uniqueName: String, plantId: Long, type: String, dueAt: Instant) {
-        val fireAt = dueAt.nineAmOnDay()
+    private suspend fun schedule(uniqueName: String, plantId: Long, type: String, dueAt: Instant) {
+        val hour = prefsRepository.reminderHour.first()
+        val minute = prefsRepository.reminderMinute.first()
+        val fireAt = dueAt.atConfiguredTime(hour, minute)
         val delayMs = fireAt.toEpochMilli() - Instant.now().toEpochMilli()
         if (delayMs <= 0) return
 
@@ -77,10 +79,10 @@ class WorkManagerReminderScheduler @Inject constructor(
 
         workManager.enqueueUniqueWork(uniqueName, ExistingWorkPolicy.REPLACE, request)
     }
+}
 
-    private fun Instant.nineAmOnDay(): Instant {
-        val zone = ZoneId.systemDefault()
-        val day = atZone(zone).toLocalDate()
-        return ZonedDateTime.of(day, LocalTime.of(9, 0), zone).toInstant()
-    }
+private fun Instant.atConfiguredTime(hour: Int, minute: Int): Instant {
+    val zone = ZoneId.systemDefault()
+    val day = atZone(zone).toLocalDate()
+    return ZonedDateTime.of(day, LocalTime.of(hour, minute), zone).toInstant()
 }

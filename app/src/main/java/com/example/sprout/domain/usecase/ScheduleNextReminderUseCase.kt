@@ -18,7 +18,7 @@ class ScheduleNextReminderUseCase @Inject constructor(
         scheduleForPlant(plant)
     }
 
-    fun scheduleForPlant(plant: Plant) {
+    suspend fun scheduleForPlant(plant: Plant) {
         val wateringDue = plant.wateringDueAt()
         if (wateringDue != null && wateringDue.isAfter(Instant.EPOCH)) {
             reminderScheduler.scheduleWatering(plant.id, wateringDue)

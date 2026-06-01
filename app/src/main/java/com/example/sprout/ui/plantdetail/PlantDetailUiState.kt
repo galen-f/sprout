@@ -3,6 +3,7 @@ package com.example.sprout.ui.plantdetail
 import com.example.sprout.domain.model.CareEvent
 import com.example.sprout.domain.model.FertilizerStatus
 import com.example.sprout.domain.model.Plant
+import com.example.sprout.domain.model.PlantPhoto
 import com.example.sprout.domain.model.WateringStatus
 
 sealed interface PlantDetailUiState {
@@ -13,6 +14,8 @@ sealed interface PlantDetailUiState {
         val wateringStatus: WateringStatus,
         val fertilizerStatus: FertilizerStatus,
         val recentEvents: List<CareEvent>,
+        val photos: List<PlantPhoto> = emptyList(),
+        val timelineItems: List<TimelineItem> = emptyList(),
         val showLogSheet: Boolean = false,
         val confirmDelete: Boolean = false,
     ) : PlantDetailUiState

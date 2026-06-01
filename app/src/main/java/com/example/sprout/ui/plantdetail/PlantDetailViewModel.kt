@@ -1,12 +1,16 @@
 package com.example.sprout.ui.plantdetail
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sprout.data.photo.PhotoStorage
 import com.example.sprout.domain.model.CareEventType
+import com.example.sprout.domain.model.PlantPhoto
 import com.example.sprout.domain.model.fertilizerStatus
 import com.example.sprout.domain.model.wateringStatus
 import com.example.sprout.domain.repository.CareEventsRepository
+import com.example.sprout.domain.repository.PlantPhotosRepository
 import com.example.sprout.domain.repository.PlantsRepository
 import com.example.sprout.domain.usecase.DeletePlantUseCase
 import com.example.sprout.domain.usecase.LogCareEventUseCase
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,6 +33,8 @@ class PlantDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val plantsRepository: PlantsRepository,
     private val careEventsRepository: CareEventsRepository,
+    private val photosRepository: PlantPhotosRepository,
+    private val photoStorage: PhotoStorage,
     private val logWatering: LogWateringUseCase,
     private val logFertilizing: LogFertilizingUseCase,
     private val logCareEvent: LogCareEventUseCase,
@@ -47,15 +54,23 @@ class PlantDetailViewModel @Inject constructor(
     val uiState = combine(
         plantsRepository.observePlantById(plantId),
         careEventsRepository.observeEventsForPlant(plantId),
+        photosRepository.observePhotosForPlant(plantId),
         _extraState,
-    ) { plant, events, extra ->
+    ) { plant, events, photos, extra ->
         if (plant == null) return@combine PlantDetailUiState.Deleted
         val now = Instant.now(clock)
+        val cutoff = now.minus(30, ChronoUnit.DAYS)
+        val timelineItems = buildList {
+            addAll(events.filter { it.timestamp.isAfter(cutoff) }.map { TimelineItem.Event(it) })
+            addAll(photos.filter { it.takenAt.isAfter(cutoff) }.map { TimelineItem.Photo(it) })
+        }.sortedBy { it.timestamp }
         PlantDetailUiState.Content(
             plant = plant,
             wateringStatus = plant.wateringStatus(now),
             fertilizerStatus = plant.fertilizerStatus(now),
             recentEvents = events.take(5),
+            photos = photos,
+            timelineItems = timelineItems,
             showLogSheet = extra.showLogSheet,
             confirmDelete = extra.confirmDelete,
         )
@@ -75,6 +90,21 @@ class PlantDetailViewModel @Inject constructor(
 
     fun onLogCareEvent(type: CareEventType, note: String? = null) {
         viewModelScope.launch { logCareEvent(plantId, type, note) }
+    }
+
+    fun onAddPhoto(uri: Uri) {
+        viewModelScope.launch {
+            val now = Instant.now(clock).toEpochMilli()
+            val dest = photoStorage.photoFile(plantId, now)
+            photoStorage.copyFromUri(uri, dest)
+            photosRepository.insert(
+                PlantPhoto(
+                    plantId = plantId,
+                    filePath = dest.absolutePath,
+                    takenAt = Instant.ofEpochMilli(now),
+                )
+            )
+        }
     }
 
     fun onShowLogSheet() = _extraState.update { it.copy(showLogSheet = true) }

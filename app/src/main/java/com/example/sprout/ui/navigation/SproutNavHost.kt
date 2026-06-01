@@ -2,7 +2,10 @@ package com.example.sprout.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,6 +14,8 @@ import androidx.navigation.navArgument
 import com.example.sprout.ui.addplant.AddPlantScreen
 import com.example.sprout.ui.carehistory.CareHistoryScreen
 import com.example.sprout.ui.editplant.EditPlantScreen
+import com.example.sprout.ui.onboarding.OnboardingScreen
+import com.example.sprout.ui.onboarding.OnboardingViewModel
 import com.example.sprout.ui.plantdetail.PlantDetailScreen
 import com.example.sprout.ui.plantlist.PlantListScreen
 import com.example.sprout.ui.settings.SettingsScreen
@@ -22,6 +27,7 @@ object Routes {
     const val EDIT_PLANT = "edit_plant/{plantId}"
     const val CARE_HISTORY = "care_history/{plantId}"
     const val SETTINGS = "settings"
+    const val ONBOARDING = "onboarding"
 
     fun plantDetail(plantId: Long) = "plant_detail/$plantId"
     fun editPlant(plantId: Long) = "edit_plant/$plantId"
@@ -35,7 +41,15 @@ fun SproutNavHost(
     onDeepLinkConsumed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val hasSeenOnboarding by onboardingViewModel.hasSeenOnboarding.collectAsStateWithLifecycle()
+
+    if (hasSeenOnboarding == null) return
+
+    val startDestination = if (hasSeenOnboarding == false) Routes.ONBOARDING else Routes.PLANT_LIST
+
     LaunchedEffect(deepLinkPlantId) {
+        if (hasSeenOnboarding != true) return@LaunchedEffect
         deepLinkPlantId?.let { plantId ->
             navController.navigate(Routes.plantDetail(plantId)) {
                 launchSingleTop = true
@@ -46,9 +60,19 @@ fun SproutNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Routes.PLANT_LIST,
+        startDestination = startDestination,
         modifier = modifier,
     ) {
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onOnboardingComplete = {
+                    onboardingViewModel.onOnboardingComplete()
+                    navController.navigate(Routes.PLANT_LIST) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                },
+            )
+        }
         composable(Routes.PLANT_LIST) {
             PlantListScreen(
                 onNavigateToPlant = { plantId -> navController.navigate(Routes.plantDetail(plantId)) },

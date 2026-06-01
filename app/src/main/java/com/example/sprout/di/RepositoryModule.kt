@@ -1,8 +1,10 @@
 package com.example.sprout.di
 
 import com.example.sprout.data.repository.RoomCareEventsRepository
+import com.example.sprout.data.repository.RoomPlantPhotosRepository
 import com.example.sprout.data.repository.RoomPlantsRepository
 import com.example.sprout.domain.repository.CareEventsRepository
+import com.example.sprout.domain.repository.PlantPhotosRepository
 import com.example.sprout.domain.repository.PlantsRepository
 import com.example.sprout.notifications.ReminderScheduler
 import com.example.sprout.notifications.WorkManagerReminderScheduler
@@ -23,6 +25,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCareEventsRepository(impl: RoomCareEventsRepository): CareEventsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPlantPhotosRepository(impl: RoomPlantPhotosRepository): PlantPhotosRepository
 
     @Binds
     @Singleton

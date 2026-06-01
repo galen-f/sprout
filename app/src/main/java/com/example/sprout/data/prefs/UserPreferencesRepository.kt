@@ -19,11 +19,19 @@ class UserPreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val showArchivedKey = booleanPreferencesKey("show_archived_plants")
+    private val hasSeenOnboardingKey = booleanPreferencesKey("has_seen_onboarding")
 
     val showArchivedPlants: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[showArchivedKey] ?: false }
 
+    val hasSeenOnboarding: Flow<Boolean> = context.dataStore.data
+        .map { prefs -> prefs[hasSeenOnboardingKey] ?: false }
+
     suspend fun setShowArchived(show: Boolean) {
         context.dataStore.edit { prefs -> prefs[showArchivedKey] = show }
+    }
+
+    suspend fun setHasSeenOnboarding(seen: Boolean) {
+        context.dataStore.edit { prefs -> prefs[hasSeenOnboardingKey] = seen }
     }
 }

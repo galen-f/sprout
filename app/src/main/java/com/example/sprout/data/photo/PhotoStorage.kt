@@ -25,6 +25,9 @@ class PhotoStorage @Inject constructor(
 
     fun coverFile(plantId: Long): File = File(photosDir, "plant_$plantId.jpg")
 
+    fun photoFile(plantId: Long, takenAtMillis: Long): File =
+        File(photosDir, "plant_${plantId}_$takenAtMillis.jpg")
+
     fun tempCaptureFile(): File = File(cameraDir, "capture_temp.jpg")
 
     fun cameraUri(): Uri = FileProvider.getUriForFile(

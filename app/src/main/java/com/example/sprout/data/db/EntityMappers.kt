@@ -3,6 +3,7 @@ package com.example.sprout.data.db
 import com.example.sprout.domain.model.CareEvent
 import com.example.sprout.domain.model.CareEventType
 import com.example.sprout.domain.model.Plant
+import com.example.sprout.domain.model.PlantPhoto
 import java.time.Instant
 
 fun PlantEntity.toDomain(): Plant = Plant(
@@ -47,4 +48,18 @@ fun CareEvent.toEntity(): CareEventEntity = CareEventEntity(
     type = type.name,
     timestamp = timestamp.toEpochMilli(),
     note = note,
+)
+
+fun PlantPhotoEntity.toDomain(): PlantPhoto = PlantPhoto(
+    id = id,
+    plantId = plantId,
+    filePath = filePath,
+    takenAt = Instant.ofEpochMilli(takenAt),
+)
+
+fun PlantPhoto.toEntity(): PlantPhotoEntity = PlantPhotoEntity(
+    id = id,
+    plantId = plantId,
+    filePath = filePath,
+    takenAt = takenAt.toEpochMilli(),
 )

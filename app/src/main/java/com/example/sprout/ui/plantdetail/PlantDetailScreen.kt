@@ -1,5 +1,10 @@
 package com.example.sprout.ui.plantdetail
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,13 +42,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.sprout.R
 import com.example.sprout.ui.components.CareEventListItem
 import com.example.sprout.ui.components.LoadingIndicator
+import com.example.sprout.ui.components.PlantTimeline
 import com.example.sprout.ui.components.StatusPill
 import com.example.sprout.ui.components.WaterButton
 import com.example.sprout.ui.theme.SproutCreamDark
@@ -69,6 +78,12 @@ fun PlantDetailScreen(
         is PlantDetailUiState.Loading -> LoadingIndicator()
         is PlantDetailUiState.Deleted -> Unit
         is PlantDetailUiState.Content -> {
+            val photoPickerLauncher = rememberLauncherForActivityResult(
+                contract = PickVisualMedia(),
+            ) { uri: Uri? ->
+                if (uri != null) viewModel.onAddPhoto(uri)
+            }
+
             if (state.showLogSheet) {
                 LogCareEventSheet(
                     sheetState = sheetState,
@@ -139,11 +154,12 @@ fun PlantDetailScreen(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     Box(
-                        modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                        modifier = Modifier.fillMaxWidth().aspectRatio(4f / 5f),
                     ) {
-                        if (state.plant.coverPhotoUri != null) {
+                        val displayUri = state.photos.firstOrNull()?.filePath ?: state.plant.coverPhotoUri
+                        if (displayUri != null) {
                             AsyncImage(
-                                model = state.plant.coverPhotoUri,
+                                model = displayUri,
                                 contentDescription = state.plant.name,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize(),
@@ -159,7 +175,29 @@ fun PlantDetailScreen(
                                 )
                             }
                         }
+
+                        IconButton(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(8.dp),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add_photo),
+                                contentDescription = "Add photo",
+                                tint = Color.White,
+                            )
+                        }
                     }
+
+                    PlantTimeline(
+                        items = state.timelineItems,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    )
 
                     Column(modifier = Modifier.padding(16.dp)) {
                         state.plant.species?.let { species ->

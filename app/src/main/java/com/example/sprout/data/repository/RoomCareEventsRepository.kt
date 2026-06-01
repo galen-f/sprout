@@ -16,6 +16,9 @@ class RoomCareEventsRepository @Inject constructor(
     override fun observeEventsForPlant(plantId: Long): Flow<List<CareEvent>> =
         dao.observeByPlant(plantId).map { list -> list.map { it.toDomain() } }
 
+    override suspend fun getAllEvents(): List<CareEvent> =
+        dao.getAllEvents().map { it.toDomain() }
+
     override suspend fun insert(event: CareEvent) =
         dao.insert(event.toEntity())
 }

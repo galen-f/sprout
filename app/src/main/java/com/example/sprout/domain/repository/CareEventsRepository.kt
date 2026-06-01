@@ -5,5 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface CareEventsRepository {
     fun observeEventsForPlant(plantId: Long): Flow<List<CareEvent>>
+    suspend fun getAllEvents(): List<CareEvent>
     suspend fun insert(event: CareEvent)
 }

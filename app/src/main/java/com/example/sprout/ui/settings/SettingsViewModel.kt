@@ -1,12 +1,19 @@
 package com.example.sprout.ui.settings
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sprout.data.export.CsvExporter
 import com.example.sprout.data.prefs.UserPreferencesRepository
+import com.example.sprout.domain.repository.CareEventsRepository
 import com.example.sprout.domain.repository.PlantsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,6 +22,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val prefsRepository: UserPreferencesRepository,
     private val plantsRepository: PlantsRepository,
+    private val careEventsRepository: CareEventsRepository,
+    private val csvExporter: CsvExporter,
 ) : ViewModel() {
 
     val uiState = combine(
@@ -31,11 +40,23 @@ class SettingsViewModel @Inject constructor(
         initialValue = SettingsUiState(),
     )
 
+    private val _exportUri = MutableSharedFlow<Uri>()
+    val exportUri: SharedFlow<Uri> = _exportUri.asSharedFlow()
+
     fun setShowArchived(show: Boolean) {
         viewModelScope.launch { prefsRepository.setShowArchived(show) }
     }
 
     fun restorePlant(plantId: Long) {
         viewModelScope.launch { plantsRepository.restore(plantId) }
+    }
+
+    fun exportCsv() {
+        viewModelScope.launch {
+            val plants = plantsRepository.observeAllPlants().first()
+            val events = careEventsRepository.getAllEvents()
+            val uri = csvExporter.export(plants, events)
+            _exportUri.emit(uri)
+        }
     }
 }

@@ -10,6 +10,9 @@ interface CareEventDao {
     @Query("SELECT * FROM care_events WHERE plantId = :plantId ORDER BY timestamp DESC")
     fun observeByPlant(plantId: Long): Flow<List<CareEventEntity>>
 
+    @Query("SELECT * FROM care_events ORDER BY plantId, timestamp ASC")
+    suspend fun getAllEvents(): List<CareEventEntity>
+
     @Insert
     suspend fun insert(event: CareEventEntity)
 }

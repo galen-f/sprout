@@ -62,7 +62,13 @@ class WorkManagerReminderScheduler @Inject constructor(
     private suspend fun schedule(uniqueName: String, plantId: Long, type: String, dueAt: Instant) {
         val hour = prefsRepository.reminderHour.first()
         val minute = prefsRepository.reminderMinute.first()
-        val fireAt = dueAt.atConfiguredTime(hour, minute)
+        val zone = ZoneId.systemDefault()
+        var fireAt = dueAt.atConfiguredTime(hour, minute)
+        if (!fireAt.isAfter(Instant.now())) {
+            val todaySlot = ZonedDateTime.now(zone).with(LocalTime.of(hour, minute)).toInstant()
+            fireAt = if (todaySlot.isAfter(Instant.now())) todaySlot
+                     else ZonedDateTime.now(zone).plusDays(1).with(LocalTime.of(hour, minute)).toInstant()
+        }
         val delayMs = fireAt.toEpochMilli() - Instant.now().toEpochMilli()
         if (delayMs <= 0) return
 

@@ -7,6 +7,7 @@ import com.example.sprout.data.export.CsvExporter
 import com.example.sprout.data.prefs.UserPreferencesRepository
 import com.example.sprout.domain.repository.CareEventsRepository
 import com.example.sprout.domain.repository.PlantsRepository
+import com.example.sprout.domain.usecase.ScheduleNextReminderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,6 +25,7 @@ class SettingsViewModel @Inject constructor(
     private val plantsRepository: PlantsRepository,
     private val careEventsRepository: CareEventsRepository,
     private val csvExporter: CsvExporter,
+    private val scheduleNextReminder: ScheduleNextReminderUseCase,
 ) : ViewModel() {
 
     private val reminderTimeFlow = combine(
@@ -67,11 +69,21 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             prefsRepository.setReminderHour(hour)
             prefsRepository.setReminderMinute(minute)
+            plantsRepository.observeAllPlants().first()
+                .filter { it.archivedAt == null }
+                .forEach { scheduleNextReminder.scheduleForPlant(it) }
         }
     }
 
     fun setRepeatReminders(enabled: Boolean) {
-        viewModelScope.launch { prefsRepository.setRepeatReminders(enabled) }
+        viewModelScope.launch {
+            prefsRepository.setRepeatReminders(enabled)
+            if (enabled) {
+                plantsRepository.observeAllPlants().first()
+                    .filter { it.archivedAt == null }
+                    .forEach { scheduleNextReminder.scheduleForPlant(it) }
+            }
+        }
     }
 
     fun restorePlant(plantId: Long) {

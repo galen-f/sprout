@@ -14,6 +14,8 @@ class FakeCareEventsRepository : CareEventsRepository {
     override fun observeEventsForPlant(plantId: Long): Flow<List<CareEvent>> =
         events.map { list -> list.filter { it.plantId == plantId } }
 
+    override suspend fun getAllEvents(): List<CareEvent> = events.value
+
     override suspend fun insert(event: CareEvent) {
         events.value = events.value + event.copy(id = events.value.size.toLong() + 1)
     }

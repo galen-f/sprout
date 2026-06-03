@@ -28,6 +28,11 @@ class SettingsViewModel @Inject constructor(
     private val scheduleNextReminder: ScheduleNextReminderUseCase,
 ) : ViewModel() {
 
+    private val appearanceFlow = combine(
+        prefsRepository.themeMode,
+        prefsRepository.plantListView,
+    ) { themeMode, plantListView -> themeMode to plantListView }
+
     private val reminderTimeFlow = combine(
         prefsRepository.reminderHour,
         prefsRepository.reminderMinute,
@@ -35,14 +40,15 @@ class SettingsViewModel @Inject constructor(
 
     val uiState = combine(
         prefsRepository.showArchivedPlants,
-        prefsRepository.themeMode,
+        appearanceFlow,
         prefsRepository.repeatReminders,
         plantsRepository.observeAllPlants(),
         reminderTimeFlow,
-    ) { showArchived, themeMode, repeatReminders, allPlants, reminderTime ->
+    ) { showArchived, appearance, repeatReminders, allPlants, reminderTime ->
         SettingsUiState(
             showArchivedPlants = showArchived,
-            themeMode = themeMode,
+            themeMode = appearance.first,
+            plantListView = appearance.second,
             repeatReminders = repeatReminders,
             reminderHour = reminderTime.first,
             reminderMinute = reminderTime.second,
@@ -63,6 +69,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setThemeMode(mode: String) {
         viewModelScope.launch { prefsRepository.setThemeMode(mode) }
+    }
+
+    fun setPlantListView(view: String) {
+        viewModelScope.launch { prefsRepository.setPlantListView(view) }
     }
 
     fun setReminderTime(hour: Int, minute: Int) {

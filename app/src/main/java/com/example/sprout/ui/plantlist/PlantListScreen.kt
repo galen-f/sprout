@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
@@ -26,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sprout.ui.components.EmptyState
 import com.example.sprout.ui.components.LoadingIndicator
 import com.example.sprout.ui.components.PlantCard
+import com.example.sprout.ui.components.PlantListRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,19 +81,35 @@ internal fun PlantListContent(
                 modifier = Modifier.padding(paddingValues),
             )
             is PlantListUiState.Content -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    items(state.plants, key = { it.plant.id }) { item ->
-                        PlantCard(
-                            plant = item.plant,
-                            wateringStatus = item.wateringStatus,
-                            onClick = { onNavigateToPlant(item.plant.id) },
-                        )
+                if (state.viewStyle == "list") {
+                    LazyColumn(
+                        contentPadding = PaddingValues(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    ) {
+                        items(state.plants, key = { it.plant.id }) { item ->
+                            PlantListRow(
+                                plant = item.plant,
+                                wateringStatus = item.wateringStatus,
+                                onClick = { onNavigateToPlant(item.plant.id) },
+                            )
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    ) {
+                        items(state.plants, key = { it.plant.id }) { item ->
+                            PlantCard(
+                                plant = item.plant,
+                                wateringStatus = item.wateringStatus,
+                                onClick = { onNavigateToPlant(item.plant.id) },
+                            )
+                        }
                     }
                 }
             }

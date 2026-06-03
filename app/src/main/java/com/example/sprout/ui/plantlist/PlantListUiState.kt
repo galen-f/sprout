@@ -11,6 +11,9 @@ data class PlantWithStatus(
 sealed interface PlantListUiState {
     object Loading : PlantListUiState
     object Empty : PlantListUiState
-    data class Content(val plants: List<PlantWithStatus>) : PlantListUiState
+    data class Content(
+        val plants: List<PlantWithStatus>,
+        val viewStyle: String = "grid",
+    ) : PlantListUiState
     data class Error(val message: String) : PlantListUiState
 }

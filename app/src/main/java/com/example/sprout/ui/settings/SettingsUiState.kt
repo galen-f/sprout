@@ -6,6 +6,7 @@ data class SettingsUiState(
     val showArchivedPlants: Boolean = false,
     val archivedPlants: List<Plant> = emptyList(),
     val themeMode: String = "system",
+    val plantListView: String = "grid",
     val reminderHour: Int = 9,
     val reminderMinute: Int = 0,
     val repeatReminders: Boolean = false,

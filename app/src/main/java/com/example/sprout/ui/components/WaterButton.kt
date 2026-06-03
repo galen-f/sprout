@@ -5,8 +5,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,10 +39,10 @@ fun WaterButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .fillMaxWidth()
             .scale(scale)
             .clip(RoundedCornerShape(50))
             .background(CanopyGradient)
-            .widthIn(min = 160.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {

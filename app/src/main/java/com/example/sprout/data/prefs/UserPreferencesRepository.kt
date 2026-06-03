@@ -23,6 +23,7 @@ class UserPreferencesRepository @Inject constructor(
     private val showArchivedKey = booleanPreferencesKey("show_archived_plants")
     private val hasSeenOnboardingKey = booleanPreferencesKey("has_seen_onboarding")
     private val themeModeKey = stringPreferencesKey("theme_mode")
+    private val plantListViewKey = stringPreferencesKey("plant_list_view")
 
     val showArchivedPlants: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[showArchivedKey] ?: false }
@@ -36,6 +37,9 @@ class UserPreferencesRepository @Inject constructor(
 
     val themeMode: Flow<String> = context.dataStore.data
         .map { prefs -> prefs[themeModeKey] ?: "system" }
+
+    val plantListView: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[plantListViewKey] ?: "grid" }
 
     val reminderHour: Flow<Int> = context.dataStore.data
         .map { prefs -> prefs[reminderHourKey] ?: 9 }
@@ -56,6 +60,10 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setThemeMode(mode: String) {
         context.dataStore.edit { prefs -> prefs[themeModeKey] = mode }
+    }
+
+    suspend fun setPlantListView(view: String) {
+        context.dataStore.edit { prefs -> prefs[plantListViewKey] = view }
     }
 
     suspend fun setReminderHour(hour: Int) {

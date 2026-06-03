@@ -130,6 +130,35 @@ fun SettingsScreen(
                 HorizontalDivider()
             }
 
+            item {
+                val viewKeys = listOf("grid", "list")
+                val viewLabels = listOf("Grid", "List")
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    Text("Plant list view", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Choose how plants are displayed on the home screen",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        viewKeys.forEachIndexed { index, view ->
+                            SegmentedButton(
+                                selected = uiState.plantListView == view,
+                                onClick = { viewModel.setPlantListView(view) },
+                                shape = SegmentedButtonDefaults.itemShape(index, viewKeys.size),
+                                label = { Text(viewLabels[index]) },
+                            )
+                        }
+                    }
+                }
+                HorizontalDivider()
+            }
+
             // ── Reminders ─────────────────────────────────────────────────────
             item { SectionHeader("Reminders") }
 

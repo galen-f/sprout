@@ -6,8 +6,10 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -206,16 +208,23 @@ fun PlantDetailScreen(
                             Spacer(Modifier.height(8.dp))
                         }
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            StatusPill(status = state.wateringStatus)
-                            Spacer(Modifier.width(8.dp))
-                            WaterButton(onClick = viewModel::onWaterNow)
-                        }
-
-                        Spacer(Modifier.height(16.dp))
-
-                        TextButton(onClick = viewModel::onShowLogSheet) {
-                            Text("Log care event")
+                        StatusPill(status = state.wateringStatus)
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            WaterButton(
+                                onClick = viewModel::onWaterNow,
+                                modifier = Modifier.weight(1f),
+                            )
+                            OutlinedButton(
+                                onClick = viewModel::onShowLogSheet,
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
+                            ) {
+                                Text("Log care event")
+                            }
                         }
 
                         if (state.recentEvents.isNotEmpty()) {

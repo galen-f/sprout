@@ -76,7 +76,7 @@ class EditPlantViewModel @Inject constructor(
                     notes = f.notes.trim().ifBlank { null },
                 )
                 plantsRepository.upsert(updated)
-                scheduleNextReminder(plantId)
+                scheduleNextReminder.scheduleForPlant(updated)
                 _uiState.value = EditPlantUiState.Saved
             } catch (e: Exception) {
                 _uiState.value = EditPlantUiState.Error(e.message ?: "Unknown error")

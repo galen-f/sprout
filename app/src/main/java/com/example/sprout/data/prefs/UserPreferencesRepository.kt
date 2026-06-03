@@ -24,6 +24,7 @@ class UserPreferencesRepository @Inject constructor(
     private val hasSeenOnboardingKey = booleanPreferencesKey("has_seen_onboarding")
     private val themeModeKey = stringPreferencesKey("theme_mode")
     private val plantListViewKey = stringPreferencesKey("plant_list_view")
+    private val plantSortOrderKey = stringPreferencesKey("plant_sort_order")
 
     val showArchivedPlants: Flow<Boolean> = context.dataStore.data
         .map { prefs -> prefs[showArchivedKey] ?: false }
@@ -40,6 +41,9 @@ class UserPreferencesRepository @Inject constructor(
 
     val plantListView: Flow<String> = context.dataStore.data
         .map { prefs -> prefs[plantListViewKey] ?: "grid" }
+
+    val plantSortOrder: Flow<String> = context.dataStore.data
+        .map { prefs -> prefs[plantSortOrderKey] ?: "next_due" }
 
     val reminderHour: Flow<Int> = context.dataStore.data
         .map { prefs -> prefs[reminderHourKey] ?: 9 }
@@ -64,6 +68,10 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setPlantListView(view: String) {
         context.dataStore.edit { prefs -> prefs[plantListViewKey] = view }
+    }
+
+    suspend fun setPlantSortOrder(order: String) {
+        context.dataStore.edit { prefs -> prefs[plantSortOrderKey] = order }
     }
 
     suspend fun setReminderHour(hour: Int) {

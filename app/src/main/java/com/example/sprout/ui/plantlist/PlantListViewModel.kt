@@ -3,6 +3,7 @@ package com.example.sprout.ui.plantlist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sprout.data.prefs.UserPreferencesRepository
+import com.example.sprout.domain.model.wateringDueAt
 import com.example.sprout.domain.model.wateringStatus
 import com.example.sprout.domain.repository.PlantsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,20 +24,19 @@ class PlantListViewModel @Inject constructor(
     val uiState = combine(
         plantsRepository.observeActivePlants(),
         prefsRepository.plantListView,
-    ) { plants, viewStyle ->
+        prefsRepository.plantSortOrder,
+    ) { plants, viewStyle, sortOrder ->
         if (plants.isEmpty()) {
             PlantListUiState.Empty
         } else {
             val now = Instant.now(clock)
-            PlantListUiState.Content(
-                plants = plants.map { plant ->
-                    PlantWithStatus(
-                        plant = plant,
-                        wateringStatus = plant.wateringStatus(now),
-                    )
-                },
-                viewStyle = viewStyle,
-            )
+            val items = plants.map { plant ->
+                PlantWithStatus(
+                    plant = plant,
+                    wateringStatus = plant.wateringStatus(now),
+                )
+            }.sortedWith(sortOrder)
+            PlantListUiState.Content(plants = items, viewStyle = viewStyle)
         }
     }.stateIn(
         scope = viewModelScope,
@@ -44,3 +44,10 @@ class PlantListViewModel @Inject constructor(
         initialValue = PlantListUiState.Loading,
     )
 }
+
+private fun List<PlantWithStatus>.sortedWith(sortOrder: String): List<PlantWithStatus> =
+    when (sortOrder) {
+        "name" -> sortedBy { it.plant.name.lowercase() }
+        "recently_added" -> sortedByDescending { it.plant.createdAt }
+        else -> sortedWith(compareBy(nullsFirst()) { it.plant.wateringDueAt() })
+    }

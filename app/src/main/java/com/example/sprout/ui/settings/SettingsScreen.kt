@@ -159,6 +159,35 @@ fun SettingsScreen(
                 HorizontalDivider()
             }
 
+            item {
+                val sortKeys = listOf("next_due", "name", "recently_added")
+                val sortLabels = listOf("Next due", "Name", "Recent")
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    Text("Sort order", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Order plants on the home screen",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        sortKeys.forEachIndexed { index, order ->
+                            SegmentedButton(
+                                selected = uiState.plantSortOrder == order,
+                                onClick = { viewModel.setPlantSortOrder(order) },
+                                shape = SegmentedButtonDefaults.itemShape(index, sortKeys.size),
+                                label = { Text(sortLabels[index]) },
+                            )
+                        }
+                    }
+                }
+                HorizontalDivider()
+            }
+
             // ── Reminders ─────────────────────────────────────────────────────
             item { SectionHeader("Reminders") }
 
